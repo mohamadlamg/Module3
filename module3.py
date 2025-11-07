@@ -396,7 +396,7 @@ with col2:
     st.markdown(datetime.now().strftime("%Y-%m-%d %H:%M"))
 with col3:
     st.markdown("**💡 Status**")
-    st.markdown("🟢 Ready to assist")
+    st.markdown("🟢 Ready to assist",unsafe_allow_html=True)
 
 # Example queries (collapsible)
 with st.expander("💡 Example Queries to Try"):
@@ -413,4 +413,4 @@ with st.expander("💡 Example Queries to Try"):
     - What is photosynthesis?
     - Who discovered penicillin?
     - Explain quantum mechanics
-    """)
+    """,unsafe_allow_html=True)
