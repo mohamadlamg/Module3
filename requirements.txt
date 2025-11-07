@@ -17,9 +17,8 @@ langchain-huggingface>=0.0.1
 sentence-transformers>=2.2.0
 
 # Evaluation Framework
-ragas>=0.1.0
-datasets>=2.14.0
-
+guardrails
+guardrails.hub
 # Streamlit UI
 streamlit>=1.28.0
 
