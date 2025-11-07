@@ -14,7 +14,7 @@ import streamlit as st
 from datetime import datetime
 import time
 from guardrails import Guard,OnFailAction
-from guardrails.hub import TOxicLanguage
+from guardrails.hub import ToxicLanguage
 
 # Load environment variables FIRST
 load_dotenv()
@@ -348,7 +348,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-guard = Guard().use(TOxicLanguage(threshold= 0.5,on_fail = OnFailAction.EXCEPTION))
+guard = Guard().use(ToxicLanguage(threshold= 0.5,on_fail = OnFailAction.EXCEPTION))
 
 # Chat input
 if prompt := st.chat_input("Ask me anything... 💬"):

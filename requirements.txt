@@ -18,7 +18,7 @@ sentence-transformers>=2.2.0
 
 # Evaluation Framework
 guardrails
-guardrails.hub
+guardrails-ai
 # Streamlit UI
 streamlit>=1.28.0
 
