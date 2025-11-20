@@ -13,7 +13,6 @@ from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper
 import streamlit as st
 from datetime import datetime
 import time
-from guardrails import Guard
 from module2 import agent,State,secure_input
 
 # Load environment variables FIRST
