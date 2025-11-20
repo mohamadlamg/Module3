@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph,END
 from typing_extensions import TypedDict
 from pydantic import BaseModel,Field
-from langchain.tools import StructuredTool
+from langchain_core.tools import StructuredTool
 from langgraph.graph.message import add_messages
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import ToolMessage
