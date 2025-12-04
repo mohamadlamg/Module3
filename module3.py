@@ -19,8 +19,9 @@ except Exception as e:
 MAX_QUERIES = 15
 
 def create_agent_graph():
-    """Initialize and return the configured agent"""
-    return agent
+    """Initialize and return the configured agent - lazy import to avoid blocking"""
+    from module2 import agent_assistant_graph, State
+    return agent_assistant_graph()
 
 # Configuration de la page - DOIT ÊTRE LA PREMIÈRE COMMANDE STREAMLIT
 st.set_page_config(
@@ -109,8 +110,7 @@ if 'conversation_count' not in st.session_state:
 if 'total_queries' not in st.session_state:
     st.session_state.total_queries = 0
 if 'agent' not in st.session_state:
-    with st.spinner("Initializing AI agent..."):
-        st.session_state.agent = create_agent_graph()
+    st.session_state.agent = None
 
 # Sidebar
 with st.sidebar:
@@ -205,6 +205,11 @@ with st.sidebar:
 st.markdown("# Alpha AI")
 st.markdown("### Intelligent assistant for research, learning and analysis")
 
+# Initialize agent only when needed (lazy loading)
+if st.session_state.agent is None:
+    with st.spinner("Initializing AI agent..."):
+        st.session_state.agent = create_agent_graph()
+
 # Welcome message
 if len(st.session_state.messages) == 0:
     st.markdown("""
@@ -243,6 +248,9 @@ if prompt := st.chat_input("Ask your question..."):
     with st.chat_message("assistant"):
         with st.spinner("Analyzing your query..."):
             try:
+                # Import State only when needed
+                from module2 import State
+                
                 # Create initial state
                 initial_state = State(
                     messages=[{"role": "user", "content": prompt}]
