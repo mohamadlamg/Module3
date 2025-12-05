@@ -5,7 +5,6 @@ import streamlit as st
 from datetime import datetime
 from langchain_core.tools import StructuredTool
 import time
-from module2 import agent, State, secure_input
 
 # Load environment variables
 load_dotenv()
@@ -18,10 +17,7 @@ except Exception as e:
 # Configuration
 MAX_QUERIES = 15
 
-def create_agent_graph():
-    """Initialize and return the configured agent - lazy import to avoid blocking"""
-    from module2 import agent_assistant_graph, State
-    return agent_assistant_graph()
+
 
 # Configuration de la page - DOIT ÊTRE LA PREMIÈRE COMMANDE STREAMLIT
 st.set_page_config(
@@ -206,9 +202,6 @@ st.markdown("# Alpha AI")
 st.markdown("### Intelligent assistant for research, learning and analysis")
 
 # Initialize agent only when needed (lazy loading)
-if st.session_state.agent is None:
-    with st.spinner("Initializing AI agent..."):
-        st.session_state.agent = create_agent_graph()
 
 # Welcome message
 if len(st.session_state.messages) == 0:
