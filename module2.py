@@ -13,6 +13,7 @@ from langchain_core.messages import ToolMessage
 from langchain_community.tools import WikipediaQueryRun, ArxivQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper
 from RAG import main,load_documents
+from detoxify import Detoxify
 
 
 load_dotenv()
@@ -102,14 +103,19 @@ def llm3(state : State) -> Dict :
 
 def llm1_tools() -> StructuredTool:
     def use_llm1_tools(query:str):
-        request = State(messages = [{"role":"user","content":query}])
-        result = llm1(request)
-        if result['messages']:
-            last_msg = result['messages'][-1]
-            if hasattr(last_msg, 'content'):
-                return last_msg.content
-            return str(last_msg)
-        return "No results found"
+        try:
+            request = State(messages = [{"role":"user","content":query}])
+            result = llm1(request)
+            
+            if result['messages']:
+                last_msg = result['messages'][-1]
+                if hasattr(last_msg, 'content'):
+                    return str(last_msg.content) if last_msg.content else "No results found"
+                return str(last_msg) if last_msg else "No results found"
+            return "No results found"
+        except Exception as e:
+            return f"Error searching: {str(e)}"
+    
     return StructuredTool(
         name="Academic_web_recents_requests",
         func=use_llm1_tools,
@@ -119,11 +125,22 @@ def llm1_tools() -> StructuredTool:
 
 def llm2_tools() -> StructuredTool:
     def use_llm2_tools(query:str):
-        request = State(messages = [{"role":"user","content":query}])
-        result = llm2(request)
-        if result and 'messages' in result and result['messages']:
-            return result['messages']
-        return "No Python documentation found"
+        try:
+            request = State(messages = [{"role":"user","content":query}])
+            result = llm2(request)
+            
+            # Vérification robuste du résultat
+            if result and 'messages' in result and result['messages']:
+                last_msg = result['messages'][-1]
+                # Extraire le contenu selon le type de message
+                if hasattr(last_msg, 'content'):
+                    return str(last_msg.content) if last_msg.content else "No Python documentation found"
+                else:
+                    return str(last_msg) if last_msg else "No Python documentation found"
+            return "No Python documentation found"
+        except Exception as e:
+            return f"Error searching Python documentation: {str(e)}"
+    
     return StructuredTool(
         name="Anything_about_python",
         func=use_llm2_tools,
@@ -133,12 +150,23 @@ def llm2_tools() -> StructuredTool:
 
 def llm3_tools()-> StructuredTool:
     def use_llm3_tools(document:str):
-        request = State(messages = [{"role":"user","content":document}])
-        request = load_documents(request)
-        result = llm3(request)
-        if result and 'messages' in result and result['messages']:
-            return result['messages']
-        return "No summary could be generated"
+        try:
+            request = State(messages = [{"role":"user","content":document}])
+            request = load_documents(request)
+            result = llm3(request)
+            
+            # Vérification robuste du résultat
+            if result and 'messages' in result and result['messages']:
+                last_msg = result['messages'][-1]
+                # Extraire le contenu selon le type de message
+                if hasattr(last_msg, 'content'):
+                    return str(last_msg.content) if last_msg.content else "No summary could be generated"
+                else:
+                    return str(last_msg) if last_msg else "No summary could be generated"
+            return "No summary could be generated"
+        except Exception as e:
+            return f"Error summarizing document: {str(e)}"
+    
     return StructuredTool(
         name="Document_summarizer",
         func=use_llm3_tools,
@@ -153,6 +181,27 @@ def agent_tools() -> List:
         
     ]
     return AGENT_TOOLS
+
+
+#Secure input validation
+
+
+def secure_input(query: str) :
+    model = Detoxify("original")
+    score = model.predict(query)["toxicity"]
+
+    if score >= 0.5:
+        print("Toxic content detected. Request denied.")
+        query = "How to talk politely to others ?"
+    else :
+        query= query
+
+        
+
+    return query
+
+
+
 
 def the_orchestrator(state: State) -> Dict:
     """
@@ -289,10 +338,14 @@ def agent_assistant_graph():
     return workflow.compile()
 
 
-
+# *** CORRECTION : Créer l'agent en dehors du if __name__ ***
+# Cela permet à Streamlit d'importer l'agent sans exécuter la boucle interactive
 agent = agent_assistant_graph()
-def running():
-    
+
+
+# *** Fonction main séparée pour l'utilisation en ligne de commande ***
+def run_interactive_mode():
+    """Mode interactif en ligne de commande (CLI)"""
     try:
         print("\n🤖 Agent de Recherche Multi-Outils")
         print("=" * 40)
@@ -303,8 +356,11 @@ def running():
             query_lower = query.lower()
             
             if query_lower == 'stop':
-                print("Bye bye !")
+                print("Bye bye !👋")
                 break
+            
+            # Sécuriser l'input
+            query = secure_input(query_lower)
             
             initial_state = State(
                 messages=[{"role": "user", "content": query}]
@@ -314,7 +370,11 @@ def running():
             print('=' * 40)
             print("\n" + result)
             print("\n")
-    except Exception as e :
-        print(f"Something went wrong : {e}")
+    except Exception as e:
+        print(f"🔴 Something went wrong : {e}")
 
-running()
+
+# *** Cette partie ne s'exécute QUE si le fichier est lancé directement ***
+# Streamlit n'exécutera PAS cette partie lors de l'import
+if __name__ == '__main__':
+    run_interactive_mode()

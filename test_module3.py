@@ -29,16 +29,16 @@ class TestSecureInput:
 
 
 class TestToolsCreation:
-    """Tests pour la création des outils"""
+    """Tests pour la creation des outils"""
     
     def test_llm1_outils_returns_three_tools(self):
-        """Vérifie qu'on a bien 3 outils"""
+        """Verifie qu'on a bien 3 outils"""
         tools = llm1_outils()
         assert len(tools) == 3
         assert all(hasattr(tool, 'name') for tool in tools)
     
     def test_agent_tools_returns_structured_tools(self):
-        """Vérifie que agent_tools retourne des StructuredTools"""
+        """Verifie que agent_tools retourne des StructuredTools"""
         tools = agent_tools()
         assert len(tools) == 3
         assert all(tool.name in [
